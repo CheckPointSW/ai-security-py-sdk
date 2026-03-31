@@ -1,4 +1,6 @@
 [flake8]
 max-line-length = 150
+exclude =
+    chkp_ai_security_sdk/generated
 per-file-ignores =
     */__init__.py: F401
