@@ -24,9 +24,9 @@ prod_dependencies = [
 setup(
     name='chkp-ai-security-sdk',
     version='1.0.0',
-    keywords='python, ai, security, sdk, checkpoint, genai',
+    keywords='python, ai, security, sdk, checkpoint, genai, workforce ai, ai security',
     license='MIT',
-    description='Check Point AI Security Official Python SDK',
+    description='Check Point Workforce AI Security Official Python SDK',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Haim Kastner',
