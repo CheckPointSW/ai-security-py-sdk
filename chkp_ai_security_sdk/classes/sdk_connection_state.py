@@ -1,0 +1,8 @@
+from aenum import Enum
+
+
+class SDKConnectionState(Enum):
+    CONNECTED = 'CONNECTED'
+    CONNECTING = 'CONNECTING'
+    DISCONNECTED = 'DISCONNECTED'
+    CONNECTION_ISSUE = 'CONNECTION_ISSUE'

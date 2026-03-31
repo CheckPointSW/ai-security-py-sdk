@@ -1,0 +1,16 @@
+/venv/
+/.venv/
+/.idea/
+/build/
+/*.egg-info/
+chkp_ai_security_sdk/generated/
+*.env
+__pycache__/
+/dist/
+resources/specs/
+*.pyc
+.DS_Store
+sdk_generator/open_api_tool/openapi-generator-cli-6.6.0
+
+.env
+.openapi-generator

@@ -1,0 +1,43 @@
+name: Publish package to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-n-publish:
+    name: Build and publish Python distributions to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '8'
+      - name: Download OpenAPI Generator
+        run: |
+          mkdir -p sdk_generator/open_api_tool
+          wget -q https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/6.6.0/openapi-generator-cli-6.6.0.jar \
+            -O sdk_generator/open_api_tool/openapi-generator-cli-6.6.0
+      - name: Build SDK
+        run: |
+          python -m pip install -r ./requirements.txt
+          export BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          export BUILD_JOB_ID=$GITHUB_RUN_ID
+          export BUILD_VERSION=$(python setup.py --version)
+          python ./sdk_generator/generate_sdk.py
+        env:
+          SWAGGERHUB_API_KEY: ${{ secrets.SWAGGERHUB_API_KEY }}
+      - name: Install build tools
+        run: python -m pip install build --user
+      - name: Build distributions
+        run: python -m build --sdist --wheel --outdir dist/ .
+      - name: Publish to PyPI
+        if: startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
