@@ -1,9 +1,5 @@
 # Check Point - AI Security Python SDK
 
-> **Draft** – This is a pre-release version of the SDK published for early testing. APIs and behavior may change before the official release.
-
-<!-- TODO: Remove the above draft notice once the official release is published -->
-
 [![License](https://img.shields.io/github/license/CheckPointSW/ai-security-py-sdk.svg?style=plastic)](https://github.com/CheckPointSW/ai-security-py-sdk/blob/release/LICENSE) [![Latest Release](https://img.shields.io/github/v/release/CheckPointSW/ai-security-py-sdk?style=plastic)](https://github.com/CheckPointSW/ai-security-py-sdk/releases) [![PyPI version](https://img.shields.io/pypi/v/chkp-ai-security-sdk.svg?style=plastic)](https://pypi.org/project/chkp-ai-security-sdk/)
 
 [![Build SDK Package](https://github.com/CheckPointSW/ai-security-py-sdk/actions/workflows/build.yml/badge.svg)](https://github.com/CheckPointSW/ai-security-py-sdk/actions/workflows/build.yml) [![Publish package to PyPI](https://github.com/CheckPointSW/ai-security-py-sdk/actions/workflows/release.yml/badge.svg)](https://github.com/CheckPointSW/ai-security-py-sdk/actions/workflows/release.yml)
