@@ -1,28 +1,37 @@
-name: Build SDK Package
+name: Build & Test
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
+    name: Build SDK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
+
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '11'
+
       - name: Download OpenAPI Generator
         run: |
           mkdir -p sdk_generator/open_api_tool
           wget -q https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.12.0/openapi-generator-cli-7.12.0.jar \
             -O sdk_generator/open_api_tool/openapi-generator-cli-7.12.0.jar
+
       - name: Build SDK
         run: |
           python -m pip install -r ./requirements.txt
@@ -32,7 +41,82 @@ jobs:
           python ./sdk_generator/generate_sdk.py
         env:
           SWAGGERHUB_API_KEY: ${{ secrets.SWAGGERHUB_API_KEY }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: chkp_ai_security_sdk
           path: chkp_ai_security_sdk
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: chkp_ai_security_sdk
+          path: chkp_ai_security_sdk
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Flake8
+        run: flake8 chkp_ai_security_sdk/ tests/
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: |
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
+    env:
+      CP_CI_CLIENT_ID: ${{ secrets.CP_CI_CLIENT_ID }}
+      CP_CI_ACCESS_KEY: ${{ secrets.CP_CI_ACCESS_KEY }}
+      CP_CI_GATEWAY: ${{ secrets.CP_CI_GATEWAY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: chkp_ai_security_sdk
+          path: chkp_ai_security_sdk
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
+          pip install pytest pytest-timeout
+
+      - name: Check secrets available
+        id: secrets-check
+        run: |
+          if [ -z "$CP_CI_CLIENT_ID" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Skipping integration tests — secrets not configured"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run integration tests
+        if: steps.secrets-check.outputs.available == 'true'
+        run: python -m pytest tests/ -v --timeout=300
+        env:
+          CP_CI_CLIENT_ID: ${{ secrets.CP_CI_CLIENT_ID }}
+          CP_CI_ACCESS_KEY: ${{ secrets.CP_CI_ACCESS_KEY }}
+          CP_CI_GATEWAY: ${{ secrets.CP_CI_GATEWAY }}
