@@ -2,18 +2,18 @@ import asyncio
 from chkp_ai_security_sdk.classes.infinity_portal_auth import InfinityPortalAuth
 from chkp_ai_security_sdk.classes.sdk_connection_state import SDKConnectionState
 from chkp_ai_security_sdk.core.session_manager import SessionManager
-from chkp_ai_security_sdk.generated_async.api_mixin import _AsyncApiMixin
+from chkp_ai_security_sdk.generated_browse_async.api_mixin import _AsyncBrowseApiMixin
 
 
-class AsyncAISecurity(_AsyncApiMixin):
-    """Check Point AI Security SDK (async) - manage AI Security policies and assets."""
+class AsyncBrowseSecurity(_AsyncBrowseApiMixin):
+    """Check Point Browse Security SDK (async) - manage Browse Security policies and assets."""
 
     def __init__(self):
         self._session_manager = SessionManager()
         self._api_client = None
 
     async def connect(self, infinity_portal_auth: InfinityPortalAuth):
-        """Connect to AI Security service using CloudInfra API credentials."""
+        """Connect to Browse Security service using CloudInfra API credentials."""
         await asyncio.to_thread(self._session_manager.connect, infinity_portal_auth)
 
     async def disconnect(self):
@@ -31,7 +31,7 @@ class AsyncAISecurity(_AsyncApiMixin):
     def info() -> str:
         """Returns SDK build and spec information."""
         try:
-            from chkp_ai_security_sdk.generated_async.sdk_build import sdk_build_info
+            from chkp_ai_security_sdk.generated_browse_async.sdk_build import sdk_build_info
             return str(sdk_build_info())
         except Exception:
             return 'SDK info not available (run sdk_generator/generate_sdk.py first)'
@@ -39,8 +39,8 @@ class AsyncAISecurity(_AsyncApiMixin):
     def _get_api_client(self):
         sync_cfg = self._session_manager.client_configuration
         if self._api_client is None:
-            from chkp_ai_security_sdk.generated_async.api_client import ApiClient
-            from chkp_ai_security_sdk.generated_async.configuration import Configuration
+            from chkp_ai_security_sdk.generated_browse_async.api_client import ApiClient
+            from chkp_ai_security_sdk.generated_browse_async.configuration import Configuration
             cfg = Configuration()
             cfg.host = sync_cfg.host
             cfg.access_token = sync_cfg.access_token

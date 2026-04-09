@@ -29,10 +29,7 @@ class SessionManager:
 
     @property
     def client_configuration(self) -> Any:
-        if self.__sdk_connection_state == SDKConnectionState.DISCONNECTED:
-            error_logger('Unable to process operation call, no session configured, connect first')
-            raise WorkforceAIApiException(error_scope=WorkforceAIErrorScope.SESSION, message='No session configured, connect first')
-
+        self.__check_connected()
         from chkp_ai_security_sdk.generated.configuration import Configuration
         configuration = Configuration()
         configuration.host = self.__url
@@ -146,3 +143,8 @@ class SessionManager:
 
     def connection_state(self) -> SDKConnectionState:
         return self.__sdk_connection_state
+
+    def __check_connected(self):
+        if self.__sdk_connection_state == SDKConnectionState.DISCONNECTED:
+            error_logger('Unable to process operation call, no session configured, connect first')
+            raise WorkforceAIApiException(error_scope=WorkforceAIErrorScope.SESSION, message='No session configured, connect first')

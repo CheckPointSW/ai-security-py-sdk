@@ -11,22 +11,53 @@ if os.path.exists('../.env'):
     from dotenv import load_dotenv
     load_dotenv()
 
+# (spec subdir, generated package name, generated output path)
+PRODUCTS = [
+    # ── Sync (urllib3) ──
+    {
+        'spec_dir': 'main',
+        'package_name': 'chkp_ai_security_sdk.generated',
+        'generated_rel': 'chkp_ai_security_sdk/generated',
+    },
+    {
+        'spec_dir': 'browse',
+        'package_name': 'chkp_ai_security_sdk.generated_browse',
+        'generated_rel': 'chkp_ai_security_sdk/generated_browse',
+    },
+    # ── Async (aiohttp) ──
+    {
+        'spec_dir': 'main',
+        'package_name': 'chkp_ai_security_sdk.generated_async',
+        'generated_rel': 'chkp_ai_security_sdk/generated_async',
+        'library': 'asyncio',
+    },
+    {
+        'spec_dir': 'browse',
+        'package_name': 'chkp_ai_security_sdk.generated_browse_async',
+        'generated_rel': 'chkp_ai_security_sdk/generated_browse_async',
+        'library': 'asyncio',
+    },
+]
 
-def generate(spec: str = 'main'):
-    log_prefix = '[generate]'
+
+def generate(product: dict):
+    log_prefix = f'[generate:{product["spec_dir"]}]'
     this_dir_path = os.path.dirname(__file__)
     project_dir = Path(this_dir_path, '../')
-    specs_path = os.path.join(project_dir, 'resources', 'specs', spec, 'swagger.json')
+    specs_path = os.path.join(project_dir, 'resources', 'specs', product['spec_dir'], 'swagger.json')
     generator_path = os.path.join(this_dir_path, 'open_api_tool', 'openapi-generator-cli-7.12.0.jar')
     jre_path = os.getenv('JRE_PATH', 'java')
-    generated_path = os.path.join(project_dir, 'chkp_ai_security_sdk', 'generated')
+    generated_path = os.path.join(project_dir, product['generated_rel'])
+
+    library = product.get('library', '')
+    library_prop = f',library={library}' if library else ''
 
     try:
         if os.path.exists(generated_path):
             shutil.rmtree(
                 generated_path,
                 ignore_errors=True,
-                onerror=lambda err: print(f'[generate] Error cleaning generated dir: {err}'),
+                onerror=lambda err: print(f'{log_prefix} Error cleaning generated dir: {err}'),
             )
 
         cmd_line = (
@@ -35,31 +66,39 @@ def generate(spec: str = 'main'):
             f' --input-spec {specs_path}'
             f' --output {project_dir}'
             f' --global-property modelDocs=false,modelTests=false'
-            f' --additional-properties=generateSourceCodeOnly=true,packageName=chkp_ai_security_sdk.generated'
+            f' --additional-properties=generateSourceCodeOnly=true,packageName={product["package_name"]}{library_prop}'
             f' --skip-validate-spec'
         )
         print(f'{log_prefix} Invoking generator:\n{cmd_line}')
         subprocess.run(cmd_line, shell=True, check=True, stdout=sys.stdout)
 
     except subprocess.CalledProcessError as e:
-        print(f'[generate] Generator error:\n\t{e}')
+        print(f'{log_prefix} Generator error:\n\t{e}')
         raise
 
 
 def start_generate_process():
     this_dir_path = os.path.dirname(__file__)
     project_dir = Path(this_dir_path, '../')
-    spec_path = os.path.join(project_dir, 'resources', 'specs', 'main', 'swagger.json')
+
+    # Step 1: Fetch all specs
     fetch_api_specs()
-    # Copy spec files from CWD-relative path to project root if needed
-    cwd_spec_dir = os.path.join('resources', 'specs', 'main')
-    dest_spec_dir = os.path.join(project_dir, 'resources', 'specs', 'main')
-    if os.path.exists(cwd_spec_dir) and os.path.abspath(cwd_spec_dir) != os.path.abspath(str(dest_spec_dir)):
-        os.makedirs(str(dest_spec_dir), exist_ok=True)
-        for fname in os.listdir(cwd_spec_dir):
-            shutil.copy2(os.path.join(cwd_spec_dir, fname), os.path.join(str(dest_spec_dir), fname))
-    normalize_spec(spec_path)
-    generate()
+
+    for product in PRODUCTS:
+        spec_dir = product['spec_dir']
+        # Copy spec files from CWD-relative path to project root if needed
+        cwd_spec_dir = os.path.join('resources', 'specs', spec_dir)
+        dest_spec_dir = os.path.join(project_dir, 'resources', 'specs', spec_dir)
+        if os.path.exists(cwd_spec_dir) and os.path.abspath(cwd_spec_dir) != os.path.abspath(str(dest_spec_dir)):
+            os.makedirs(str(dest_spec_dir), exist_ok=True)
+            for fname in os.listdir(cwd_spec_dir):
+                shutil.copy2(os.path.join(cwd_spec_dir, fname), os.path.join(str(dest_spec_dir), fname))
+
+        spec_path = os.path.join(project_dir, 'resources', 'specs', spec_dir, 'swagger.json')
+        normalize_spec(spec_path)
+        generate(product)
+
+    # Step 3: Post-build for both products
     post_build_process()
 
 
