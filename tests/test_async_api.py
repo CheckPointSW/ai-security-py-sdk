@@ -2,8 +2,6 @@ import asyncio
 import unittest
 import os
 
-import pytest
-
 CLIENT_ID = os.environ.get('CP_CI_CLIENT_ID', '')
 ACCESS_KEY = os.environ.get('CP_CI_ACCESS_KEY', '')
 GATEWAY = os.environ.get('CP_CI_GATEWAY', '')
@@ -41,7 +39,6 @@ class TestAsyncIntegration(unittest.TestCase):
 
     @classmethod
     async def _async_cleanup_all(cls):
-        import time
         for get_rulebase in [
             cls.ai.chats_policy_api.get_chats_rulebase_external_v1_chats_rulebase_get,
             cls.ai.ai_access_policy_api.get_ai_access_rulebase_external_v1_ai_access_rulebase_get,
@@ -317,10 +314,11 @@ class TestAsyncIntegration(unittest.TestCase):
             result = await self.ai.chats_policy_api.add_chats_rule_external_v1_chats_rule_post(
                 add_chats_rule_request=AddChatsRuleRequest(
                     name='Async Toggle Test Rule',
+                    description='Async toggle test',
                     order=0,
                     policy=ChatsPolicy(
                         event_type=DLPEventType.PROMPT,
-                        action='detect',
+                        action='block',
                         logging=LoggingStatus.ENABLED,
                         services_and_application=ServicesAndApplication(mode=SelectionMode.ALL),
                     ),

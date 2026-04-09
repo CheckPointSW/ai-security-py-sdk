@@ -27,7 +27,6 @@ from chkp_ai_security_sdk import (
 
 def _mock_successful_login(session_manager):
     """Patch perform_ci_login to set CONNECTED state without real HTTP."""
-    original_login = session_manager._SessionManager__perform_ci_login
 
     def fake_login():
         session_manager._SessionManager__sdk_connection_state = SDKConnectionState.CONNECTED

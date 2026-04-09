@@ -289,10 +289,11 @@ class TestIntegration(unittest.TestCase):
         result = self.ai.chats_policy_api.add_chats_rule_external_v1_chats_rule_post(
             add_chats_rule_request=AddChatsRuleRequest(
                 name='Toggle Test Rule',
+                description='Toggle test',
                 order=0,
                 policy=ChatsPolicy(
                     event_type=DLPEventType.PROMPT,
-                    action='detect',
+                    action='block',
                     logging=LoggingStatus.ENABLED,
                     services_and_application=ServicesAndApplication(mode=SelectionMode.ALL),
                 ),

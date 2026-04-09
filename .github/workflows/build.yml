@@ -70,7 +70,7 @@ jobs:
           pip install flake8
 
       - name: Flake8
-        run: flake8 chkp_ai_security_sdk/ tests/
+        run: flake8 chkp_ai_security_sdk/ tests/ --exclude=chkp_ai_security_sdk/generated,chkp_ai_security_sdk/generated_browse,chkp_ai_security_sdk/generated_async,chkp_ai_security_sdk/generated_browse_async
 
   integration:
     name: Integration Tests
