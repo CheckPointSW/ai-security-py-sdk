@@ -121,12 +121,12 @@ class TestIntegration(unittest.TestCase):
         self.ai.chats_policy_api.patch_chats_policy_external_v1_chats_rule_patch_policy_patch(
             PatchChatsPolicyRequest(
                 rule_id=rule_id,
-                policy=ChatsPolicy(action='detect'),
+                policy=ChatsPolicy(action='block'),
             ),
         )
         rb3 = self.ai.chats_policy_api.get_chats_rulebase_external_v1_chats_rulebase_get()
         rule3 = next(r for r in rb3.rules if r.rule_id == rule_id)
-        self.assertEqual(rule3.policy.actual_instance.action, 'detect')
+        self.assertEqual(rule3.policy.actual_instance.action, 'block')
 
         # DISABLE
         self.ai.rulebase_api.set_active_external_v1_rules_set_active_put(
