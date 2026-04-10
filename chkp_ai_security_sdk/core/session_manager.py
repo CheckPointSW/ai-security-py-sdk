@@ -29,14 +29,12 @@ class SessionManager:
 
     @property
     def client_configuration(self) -> Any:
-        if self.__sdk_connection_state == SDKConnectionState.DISCONNECTED:
-            error_logger('Unable to process operation call, no session configured, connect first')
-            raise WorkforceAIApiException(error_scope=WorkforceAIErrorScope.SESSION, message='No session configured, connect first')
-
+        self.__check_connected()
         from chkp_ai_security_sdk.generated.configuration import Configuration
         configuration = Configuration()
         configuration.host = self.__url
         configuration.access_token = self.__jwt_token
+        configuration.client_id = self.__infinity_portal_auth.client_id if self.__infinity_portal_auth else None
         return configuration
 
     def __perform_ci_login(self):
@@ -146,3 +144,8 @@ class SessionManager:
 
     def connection_state(self) -> SDKConnectionState:
         return self.__sdk_connection_state
+
+    def __check_connected(self):
+        if self.__sdk_connection_state == SDKConnectionState.DISCONNECTED:
+            error_logger('Unable to process operation call, no session configured, connect first')
+            raise WorkforceAIApiException(error_scope=WorkforceAIErrorScope.SESSION, message='No session configured, connect first')

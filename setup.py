@@ -19,14 +19,16 @@ prod_dependencies = [
     'pyjwt~=2.8',
     'unitsnet-py>=0.1.82',
     'urllib3~=2.2',
+    'aiohttp~=3.9',
+    'aiohttp-retry~=2.8',
 ]
 
 setup(
     name='chkp-ai-security-sdk',
     version='1.0.0',
-    keywords='python, ai, security, sdk, checkpoint, genai, workforce ai, ai security',
+    keywords='python, ai, security, sdk, checkpoint, genai, workforce ai, ai security, browse security',
     license='MIT',
-    description='Check Point Workforce AI Security Official Python SDK',
+    description='Check Point AI Security Official Python SDK (Workforce AI + Browse Security)',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='Haim Kastner',

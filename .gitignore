@@ -4,6 +4,10 @@
 /build/
 /*.egg-info/
 chkp_ai_security_sdk/generated/
+chkp_ai_security_sdk/generated_browse/
+chkp_ai_security_sdk/generated_async/
+chkp_ai_security_sdk/generated_browse_async/
+chkp_ai_security_sdk/*_README.md
 *.env
 __pycache__/
 /dist/

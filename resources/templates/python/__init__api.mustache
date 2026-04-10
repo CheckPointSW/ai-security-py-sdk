@@ -1,0 +1,19 @@
+# flake8: noqa
+
+# import apis into api package
+{{#apiInfo}}{{#apis}}from {{apiPackage}}.{{classFilename}} import {{classname}}
+{{/apis}}{{/apiInfo}}
+
+# TEMPLATE EDIT: Generate API mixin class (replaces post-build api_mixin.py hack)
+class _ApiMixin:
+    """Auto-generated API mixin — provides property accessors for all generated API classes."""
+
+    def _get_api_client(self):
+        raise NotImplementedError
+
+{{#apiInfo}}{{#apis}}
+    @property
+    def {{classFilename}}(self):
+        return {{classname}}(self._get_api_client())
+
+{{/apis}}{{/apiInfo}}
