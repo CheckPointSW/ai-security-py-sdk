@@ -1,7 +1,7 @@
 from chkp_ai_security_sdk.classes.infinity_portal_auth import InfinityPortalAuth
 from chkp_ai_security_sdk.classes.sdk_connection_state import SDKConnectionState
 from chkp_ai_security_sdk.core.session_manager import SessionManager
-from chkp_ai_security_sdk.generated.api_mixin import _ApiMixin
+from chkp_ai_security_sdk.generated.api import _ApiMixin
 
 print_message = True
 

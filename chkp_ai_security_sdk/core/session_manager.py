@@ -34,6 +34,7 @@ class SessionManager:
         configuration = Configuration()
         configuration.host = self.__url
         configuration.access_token = self.__jwt_token
+        configuration.client_id = self.__infinity_portal_auth.client_id if self.__infinity_portal_auth else None
         return configuration
 
     def __perform_ci_login(self):

@@ -2,10 +2,10 @@ import asyncio
 from chkp_ai_security_sdk.classes.infinity_portal_auth import InfinityPortalAuth
 from chkp_ai_security_sdk.classes.sdk_connection_state import SDKConnectionState
 from chkp_ai_security_sdk.core.session_manager import SessionManager
-from chkp_ai_security_sdk.generated_async.api_mixin import _AsyncApiMixin
+from chkp_ai_security_sdk.generated_async.api import _ApiMixin
 
 
-class AsyncAISecurity(_AsyncApiMixin):
+class AsyncAISecurity(_ApiMixin):
     """Check Point AI Security SDK (async) - manage AI Security policies and assets."""
 
     def __init__(self):
@@ -44,6 +44,7 @@ class AsyncAISecurity(_AsyncApiMixin):
             cfg = Configuration()
             cfg.host = sync_cfg.host
             cfg.access_token = sync_cfg.access_token
+            cfg.client_id = getattr(sync_cfg, 'client_id', None)
             self._api_client = ApiClient(cfg)
         else:
             self._api_client.configuration.access_token = sync_cfg.access_token

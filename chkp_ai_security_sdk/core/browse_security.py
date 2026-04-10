@@ -1,12 +1,12 @@
 from chkp_ai_security_sdk.classes.infinity_portal_auth import InfinityPortalAuth
 from chkp_ai_security_sdk.classes.sdk_connection_state import SDKConnectionState
 from chkp_ai_security_sdk.core.session_manager import SessionManager
-from chkp_ai_security_sdk.generated_browse.api_mixin import _BrowseApiMixin
+from chkp_ai_security_sdk.generated_browse.api import _ApiMixin
 
 print_message = True
 
 
-class BrowseSecurity(_BrowseApiMixin):
+class BrowseSecurity(_ApiMixin):
     """Check Point Browse Security SDK - manage Browse Security policies and assets."""
 
     def __init__(self):

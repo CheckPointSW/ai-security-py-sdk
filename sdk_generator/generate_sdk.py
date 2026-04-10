@@ -51,6 +51,7 @@ def generate(product: dict):
 
     library = product.get('library', '')
     library_prop = f',library={library}' if library else ''
+    template_dir = os.path.join(project_dir, 'resources', 'templates', 'python')
 
     try:
         if os.path.exists(generated_path):
@@ -65,6 +66,7 @@ def generate(product: dict):
             f' --generator-name python'
             f' --input-spec {specs_path}'
             f' --output {project_dir}'
+            f' --template-dir {template_dir}'
             f' --global-property modelDocs=false,modelTests=false'
             f' --additional-properties=generateSourceCodeOnly=true,packageName={product["package_name"]}{library_prop}'
             f' --skip-validate-spec'
