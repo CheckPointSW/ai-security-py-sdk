@@ -15,6 +15,7 @@ from {{packageName}}.api_response import ApiResponse
 from {{packageName}}.rest import RESTResponseType
 # TEMPLATE EDIT: import SDK logger
 from chkp_ai_security_sdk.core.logger import logger, error_logger, network_logger
+import hashlib
 
 
 {{#operations}}
@@ -38,7 +39,7 @@ class {{classname}}:
         # TEMPLATE EDIT: log outgoing request
         _client_id = getattr(self.api_client.configuration, 'client_id', None) or 'N/A'
         logger(f'Sending operation "{{operationId}}"...')
-        network_logger(f'Sending "{{operationId}}" {{httpMethod}} "{{{path}}}" | clientId={_client_id[:8]}...')
+        network_logger(f'Sending "{{operationId}}" {{httpMethod}} "{{{path}}}"')
         try:
             response_data = {{#asyncio}}await {{/asyncio}}self.api_client.call_api(
                 *_param,
@@ -70,8 +71,9 @@ class {{classname}}:
 {{>partial_api}}
         # TEMPLATE EDIT: log outgoing request
         _client_id = getattr(self.api_client.configuration, 'client_id', None) or 'N/A'
+        _client_id_hash = hashlib.sha256(_client_id.encode()).hexdigest()[:8] if _client_id != 'N/A' else 'N/A'
         logger(f'Sending operation "{{operationId}}_with_http_info"...')
-        network_logger(f'Sending "{{operationId}}" {{httpMethod}} "{{{path}}}" | clientId={_client_id[:8]}...')
+        network_logger(f'Sending "{{operationId}}" {{httpMethod}} "{{{path}}}" | clientId=sha256:{_client_id_hash}')
         try:
             response_data = {{#asyncio}}await {{/asyncio}}self.api_client.call_api(
                 *_param,

@@ -76,6 +76,28 @@ def sdk_build_info() -> WorkforceAISDKInfo:
     print(f'[post-build:{product["label"]}] sdk_build.py written')
 
 
+def __patch_configuration(product):
+    """Remove httplib.HTTPConnection.debuglevel changes from generated
+    configuration.py so that enabling SDK debug mode does not dump raw
+    HTTP traffic (including Authorization headers) to stdout."""
+    config_path = os.path.join(product['generated_dir'], 'configuration.py')
+    if not os.path.isfile(config_path):
+        return
+    with open(config_path, 'r') as f:
+        content = f.read()
+    original = content
+    # Remove the lines that toggle httplib debug level
+    content = content.replace('            httplib.HTTPConnection.debuglevel = 1\n', '')
+    content = content.replace('            httplib.HTTPConnection.debuglevel = 0\n', '')
+    # Remove the now-unused httplib import if no other references remain
+    if 'httplib' not in content.split('import http.client as httplib')[-1]:
+        content = content.replace('import http.client as httplib\n', '')
+    if content != original:
+        with open(config_path, 'w') as f:
+            f.write(content)
+        print(f'[post-build:{product["label"]}] Patched configuration.py — removed httplib debug exposure')
+
+
 def __cleanup_generated(product):
     output_path = product['generated_dir']
     for dirname in ['test', 'docs']:
@@ -105,6 +127,8 @@ def post_build_process():
         label = product['label']
         print(f'[post-build:{label}] Preparing build info...')
         __prepare_build_info(product)
+        print(f'[post-build:{label}] Patching generated code...')
+        __patch_configuration(product)
         print(f'[post-build:{label}] Cleaning up generated files...')
         __cleanup_generated(product)
 
