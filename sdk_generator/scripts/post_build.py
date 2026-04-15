@@ -59,11 +59,11 @@ from {PKG_NAME}.classes.workforceai_sdk_info import WorkforceAISDKInfo
 
 def sdk_build_info() -> WorkforceAISDKInfo:
     return WorkforceAISDKInfo(
-        sdk_build="{sdk_build}",
-        sdk_version="{sdk_version}",
-        spec="{spec_name}",
-        spec_version="{spec_version}",
-        released_on="{released_on}",
+        sdk_build={repr(sdk_build)},
+        sdk_version={repr(sdk_version)},
+        spec={repr(spec_name)},
+        spec_version={repr(spec_version)},
+        released_on={repr(released_on)},
     )
 '''
     with open(os.path.join(output_path, 'sdk_build.py'), 'w') as f:
