@@ -43,12 +43,12 @@ def __deposit_file(path, filename, content):
 
 def __download_spec(spec_name):
     print(f'[fetch-api] Fetching spec "{spec_name}" from SwaggerHub...')
-    res = requests.get(f'https://api.swaggerhub.com/apis/{API_SPEC_OWNER}/{spec_name}', headers=swagger_headers)
+    res = requests.get(f'https://api.swaggerhub.com/apis/{API_SPEC_OWNER}/{spec_name}', headers=swagger_headers, timeout=30)
     all_specs = res.json()
     latest = all_specs['apis'][-1]
     url = next((p['url'] for p in latest['properties'] if p['type'] == 'Swagger'), None)
     print(f'[fetch-api] Downloading from: {url}')
-    spec_res = requests.get(url, headers=swagger_headers)
+    spec_res = requests.get(url, headers=swagger_headers, timeout=30)
     return spec_res.json()
 
 

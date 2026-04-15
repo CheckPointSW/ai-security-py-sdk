@@ -45,7 +45,7 @@ class SessionManager:
                 'accessKey': self.__infinity_portal_auth.access_key,
             }
             headers = {'Content-Type': 'application/json'}
-            response = requests.post(url=auth_url, data=json.dumps(payload), headers=headers)
+            response = requests.post(url=auth_url, data=json.dumps(payload), headers=headers, timeout=30)
 
             if not 200 <= response.status_code <= 299:
                 error_logger(f'CI login failed with status "{response.status_code}" for session "{self.__session_id}"')
