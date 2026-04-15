@@ -46,9 +46,9 @@ def generate(product: dict):
     project_dir = Path(this_dir_path, '../')
     specs_path = os.path.join(project_dir, 'resources', 'specs', product['spec_dir'], 'swagger.json')
     generator_path = os.path.join(this_dir_path, 'open_api_tool', 'openapi-generator-cli-7.12.0.jar')
-    jre_path = shutil.which(os.getenv('JRE_PATH', 'java'))
+    jre_path = shutil.which('java')
     if not jre_path:
-        raise RuntimeError('Java runtime not found. Install Java or set JRE_PATH to a valid java executable.')
+        raise RuntimeError('Java runtime not found. Install Java or ensure java is on PATH.')
     generated_path = os.path.join(project_dir, product['generated_rel'])
 
     library = product.get('library', '')
