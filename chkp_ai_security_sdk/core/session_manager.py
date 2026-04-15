@@ -5,13 +5,13 @@ import requests
 from typing import Any
 from urllib.parse import urlparse
 
-_token_lock = threading.Lock()
-
 from chkp_ai_security_sdk.classes.workforceai_api_exception import WorkforceAIApiException, WorkforceAIErrorScope
 from chkp_ai_security_sdk.classes.infinity_portal_auth import InfinityPortalAuth
 from chkp_ai_security_sdk.classes.sdk_connection_state import SDKConnectionState
 from chkp_ai_security_sdk.core.logger import logger, error_logger
 from chkp_ai_security_sdk.core.sdk_platform import KEEP_ALIVE_GRACE_SECONDS
+
+_token_lock = threading.Lock()
 
 CI_AUTH_PATH = '/auth/external'
 SOURCE_HEADER = 'ai-security-py-sdk'
