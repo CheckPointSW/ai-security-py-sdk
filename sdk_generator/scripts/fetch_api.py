@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import requests
+from urllib.parse import urlparse
 
 API_SPEC_OWNER = 'Check-Point'
 SWAGGERHUB_API_KEY = os.environ.get('SWAGGERHUB_API_KEY')
@@ -47,6 +48,11 @@ def __download_spec(spec_name):
     all_specs = res.json()
     latest = all_specs['apis'][-1]
     url = next((p['url'] for p in latest['properties'] if p['type'] == 'Swagger'), None)
+    if not url:
+        raise ValueError(f'No Swagger URL found for spec "{spec_name}"')
+    parsed = urlparse(url)
+    if parsed.scheme != 'https' or not parsed.hostname.endswith('.swaggerhub.com'):
+        raise ValueError(f'Unexpected spec URL origin: {url}')
     print(f'[fetch-api] Downloading from: {url}')
     spec_res = requests.get(url, headers=swagger_headers, timeout=30)
     return spec_res.json()
