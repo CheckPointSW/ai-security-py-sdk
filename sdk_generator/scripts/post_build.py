@@ -49,22 +49,27 @@ def __prepare_build_info(product):
     with open(os.path.join(spec_path, 'spec'), 'r') as f:
         spec_name = f.readline().strip()
 
-    sdk_build = os.environ.get('BUILD_JOB_ID', '')
-    sdk_version = os.environ.get('BUILD_VERSION', '')
-    spec_version = swagger_spec['info']['version']
-    released_on = datetime.now().isoformat()
+    build_data = {
+        'sdk_build': os.environ.get('BUILD_JOB_ID', ''),
+        'sdk_version': os.environ.get('BUILD_VERSION', ''),
+        'spec': spec_name,
+        'spec_version': swagger_spec['info']['version'],
+        'released_on': datetime.now().isoformat(),
+    }
 
-    content = f'''
-from {PKG_NAME}.classes.workforceai_sdk_info import WorkforceAISDKInfo
+    with open(os.path.join(output_path, 'sdk_build_data.json'), 'w') as f:
+        json.dump(build_data, f)
+
+    pkg_name = PKG_NAME
+    content = f'''import json
+import os
+from {pkg_name}.classes.workforceai_sdk_info import WorkforceAISDKInfo
 
 def sdk_build_info() -> WorkforceAISDKInfo:
-    return WorkforceAISDKInfo(
-        sdk_build={repr(sdk_build)},
-        sdk_version={repr(sdk_version)},
-        spec={repr(spec_name)},
-        spec_version={repr(spec_version)},
-        released_on={repr(released_on)},
-    )
+    data_path = os.path.join(os.path.dirname(__file__), 'sdk_build_data.json')
+    with open(data_path, 'r') as f:
+        data = json.load(f)
+    return WorkforceAISDKInfo(**data)
 '''
     with open(os.path.join(output_path, 'sdk_build.py'), 'w') as f:
         f.write(content)
