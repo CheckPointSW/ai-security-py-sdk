@@ -61,18 +61,18 @@ def generate(product: dict):
                 onerror=lambda err: print(f'{log_prefix} Error cleaning generated dir: {err}'),
             )
 
-        cmd_line = (
-            f'"{jre_path}" -jar {generator_path} generate'
-            f' --generator-name python'
-            f' --input-spec {specs_path}'
-            f' --output {project_dir}'
-            f' --template-dir {template_dir}'
-            f' --global-property modelDocs=false,modelTests=false'
-            f' --additional-properties=generateSourceCodeOnly=true,packageName={product["package_name"]}{library_prop}'
-            f' --skip-validate-spec'
-        )
-        print(f'{log_prefix} Invoking generator:\n{cmd_line}')
-        subprocess.run(cmd_line, shell=True, check=True, stdout=sys.stdout)
+        cmd = [
+            jre_path, '-jar', str(generator_path), 'generate',
+            '--generator-name', 'python',
+            '--input-spec', str(specs_path),
+            '--output', str(project_dir),
+            '--template-dir', str(template_dir),
+            '--global-property', 'modelDocs=false,modelTests=false',
+            '--additional-properties', f'generateSourceCodeOnly=true,packageName={product["package_name"]}{library_prop}',
+            '--skip-validate-spec',
+        ]
+        print(f'{log_prefix} Invoking generator:\n{" ".join(cmd)}')
+        subprocess.run(cmd, check=True, stdout=sys.stdout)
 
     except subprocess.CalledProcessError as e:
         print(f'{log_prefix} Generator error:\n\t{e}')

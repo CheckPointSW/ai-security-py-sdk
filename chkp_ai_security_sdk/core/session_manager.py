@@ -13,7 +13,6 @@ from chkp_ai_security_sdk.core.sdk_platform import KEEP_ALIVE_GRACE_SECONDS
 
 CI_AUTH_PATH = '/auth/external'
 SOURCE_HEADER = 'ai-security-py-sdk'
-VERIFY_CONTENT = False
 
 
 class SessionManager:
@@ -49,7 +48,7 @@ class SessionManager:
             response = requests.post(url=auth_url, data=json.dumps(payload), headers=headers)
 
             if not 200 <= response.status_code <= 299:
-                error_logger(f'CI login failed with status "{response.status_code}" payload: "{response.text}"')
+                error_logger(f'CI login failed with status "{response.status_code}" for session "{self.__session_id}"')
                 raise WorkforceAIApiException(
                     error_scope=WorkforceAIErrorScope.SERVICE,
                     payload_error=response.text,
@@ -59,7 +58,7 @@ class SessionManager:
 
             response_json = response.json()
             if not response_json.get('success'):
-                error_logger(f'CI login failed for session "{self.__session_id}", error: {response_json}')
+                error_logger(f'CI login failed for session "{self.__session_id}"')
                 raise WorkforceAIApiException(error_scope=WorkforceAIErrorScope.SERVICE, payload_error=str(response_json))
 
             self.__jwt_token = response_json['data']['token']
