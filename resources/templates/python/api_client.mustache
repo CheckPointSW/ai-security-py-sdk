@@ -9,6 +9,7 @@ import decimal
 import json
 import mimetypes
 import os
+import pathlib
 import re
 import tempfile
 
@@ -718,8 +719,12 @@ class ApiClient:
                 r'filename=[\'"]?([^\'"\s]+)[\'"]?',
                 content_disposition
             )
-            assert m is not None, "Unexpected 'content-disposition' header value"
-            filename = m.group(1)
+            if m is None:
+                raise ApiValueError("Unexpected 'content-disposition' header value")
+            filename = pathlib.PurePosixPath(m.group(1)).name
+            filename = pathlib.PureWindowsPath(filename).name
+            if not filename or filename in ('.', '..'):
+                raise ApiValueError("Invalid filename in 'content-disposition' header")
             path = os.path.join(os.path.dirname(path), filename)
 
         with open(path, "wb") as f:

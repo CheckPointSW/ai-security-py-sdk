@@ -11,9 +11,10 @@ from chkp_ai_security_sdk.classes.sdk_connection_state import SDKConnectionState
 from chkp_ai_security_sdk.core.logger import logger, error_logger
 from chkp_ai_security_sdk.core.sdk_platform import KEEP_ALIVE_GRACE_SECONDS
 
+_token_lock = threading.Lock()
+
 CI_AUTH_PATH = '/auth/external'
 SOURCE_HEADER = 'ai-security-py-sdk'
-VERIFY_CONTENT = False
 
 
 class SessionManager:
@@ -31,9 +32,11 @@ class SessionManager:
     def client_configuration(self) -> Any:
         self.__check_connected()
         from chkp_ai_security_sdk.generated.configuration import Configuration
+        with _token_lock:
+            token = self.__jwt_token
         configuration = Configuration()
         configuration.host = self.__url
-        configuration.access_token = self.__jwt_token
+        configuration.access_token = token
         configuration.client_id = self.__infinity_portal_auth.client_id if self.__infinity_portal_auth else None
         return configuration
 
@@ -46,25 +49,27 @@ class SessionManager:
                 'accessKey': self.__infinity_portal_auth.access_key,
             }
             headers = {'Content-Type': 'application/json'}
-            response = requests.post(url=auth_url, data=json.dumps(payload), headers=headers)
+            response = requests.post(url=auth_url, data=json.dumps(payload), headers=headers, timeout=30)
 
             if not 200 <= response.status_code <= 299:
-                error_logger(f'CI login failed with status "{response.status_code}" payload: "{response.text}"')
+                error_logger(f'CI login failed with status "{response.status_code}" for session "{self.__session_id}"')
+                truncated_body = (response.text or '')[:500]
                 raise WorkforceAIApiException(
                     error_scope=WorkforceAIErrorScope.SERVICE,
-                    payload_error=response.text,
+                    payload_error=truncated_body,
                     url=auth_url,
                     status_code=response.status_code,
                 )
 
             response_json = response.json()
             if not response_json.get('success'):
-                error_logger(f'CI login failed for session "{self.__session_id}", error: {response_json}')
-                raise WorkforceAIApiException(error_scope=WorkforceAIErrorScope.SERVICE, payload_error=str(response_json))
+                error_logger(f'CI login failed for session "{self.__session_id}"')
+                raise WorkforceAIApiException(error_scope=WorkforceAIErrorScope.SERVICE, payload_error=str(response_json)[:500])
 
-            self.__jwt_token = response_json['data']['token']
-            self.__token_expires_in = response_json['data'].get('expiresIn', 1800)
-            self.__sdk_connection_state = SDKConnectionState.CONNECTED
+            with _token_lock:
+                self.__jwt_token = response_json['data']['token']
+                self.__token_expires_in = response_json['data'].get('expiresIn', 1800)
+                self.__sdk_connection_state = SDKConnectionState.CONNECTED
             logger(f'CI login succeeded for session "{self.__session_id}", token expires in {self.__token_expires_in}s')
 
         except WorkforceAIApiException:
@@ -139,7 +144,8 @@ class SessionManager:
         self.__sdk_connection_state = SDKConnectionState.DISCONNECTED
         self.__keep_alive_on_flag = False
         self.__keep_alive_event.set()  # Wake up sleeping thread so it exits
-        self.__jwt_token = ''
+        with _token_lock:
+            self.__jwt_token = ''
         self.__session_id = str(uuid.uuid4())
 
     def connection_state(self) -> SDKConnectionState:

@@ -37,7 +37,7 @@ setup(
     maintainer_email='haimk@checkpoint.com',
     url='https://github.com/CheckPointSW/ai-security-py-sdk',
     packages=find_packages(exclude=['sdk_generator', 'scripts', 'tests']),
-    package_data={'': ['*']},
+    package_data={'': ['*.json']},
     install_requires=prod_dependencies,
     python_requires='>=3.9,<4.0',
 )

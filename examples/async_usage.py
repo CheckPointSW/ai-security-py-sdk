@@ -46,7 +46,6 @@ async def main():
         result = await ai.chats_policy_api.get_chats_rulebase_external_v1_chats_rulebase_get()
         print(result)
 
-
         # Run multiple AI Security calls concurrently
         print('\n--- Concurrent AI Security calls ---')
         access, dlp = await asyncio.gather(

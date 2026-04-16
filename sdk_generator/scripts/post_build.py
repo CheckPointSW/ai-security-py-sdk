@@ -49,26 +49,53 @@ def __prepare_build_info(product):
     with open(os.path.join(spec_path, 'spec'), 'r') as f:
         spec_name = f.readline().strip()
 
-    sdk_build = os.environ.get('BUILD_JOB_ID', '')
-    sdk_version = os.environ.get('BUILD_VERSION', '')
-    spec_version = swagger_spec['info']['version']
-    released_on = datetime.now().isoformat()
+    build_data = {
+        'sdk_build': os.environ.get('BUILD_JOB_ID', ''),
+        'sdk_version': os.environ.get('BUILD_VERSION', ''),
+        'spec': spec_name,
+        'spec_version': swagger_spec['info']['version'],
+        'released_on': datetime.now().isoformat(),
+    }
 
-    content = f'''
-from {PKG_NAME}.classes.workforceai_sdk_info import WorkforceAISDKInfo
+    with open(os.path.join(output_path, 'sdk_build_data.json'), 'w') as f:
+        json.dump(build_data, f)
+
+    pkg_name = PKG_NAME
+    content = f'''import json
+import os
+from {pkg_name}.classes.workforceai_sdk_info import WorkforceAISDKInfo
 
 def sdk_build_info() -> WorkforceAISDKInfo:
-    return WorkforceAISDKInfo(
-        sdk_build="{sdk_build}",
-        sdk_version="{sdk_version}",
-        spec="{spec_name}",
-        spec_version="{spec_version}",
-        released_on="{released_on}",
-    )
+    data_path = os.path.join(os.path.dirname(__file__), 'sdk_build_data.json')
+    with open(data_path, 'r') as f:
+        data = json.load(f)
+    return WorkforceAISDKInfo(**data)
 '''
     with open(os.path.join(output_path, 'sdk_build.py'), 'w') as f:
         f.write(content)
     print(f'[post-build:{product["label"]}] sdk_build.py written')
+
+
+def __patch_configuration(product):
+    """Remove httplib.HTTPConnection.debuglevel changes from generated
+    configuration.py so that enabling SDK debug mode does not dump raw
+    HTTP traffic (including Authorization headers) to stdout."""
+    config_path = os.path.join(product['generated_dir'], 'configuration.py')
+    if not os.path.isfile(config_path):
+        return
+    with open(config_path, 'r') as f:
+        content = f.read()
+    original = content
+    # Remove the lines that toggle httplib debug level
+    content = content.replace('            httplib.HTTPConnection.debuglevel = 1\n', '')
+    content = content.replace('            httplib.HTTPConnection.debuglevel = 0\n', '')
+    # Remove the now-unused httplib import if no other references remain
+    if 'httplib' not in content.split('import http.client as httplib')[-1]:
+        content = content.replace('import http.client as httplib\n', '')
+    if content != original:
+        with open(config_path, 'w') as f:
+            f.write(content)
+        print(f'[post-build:{product["label"]}] Patched configuration.py — removed httplib debug exposure')
 
 
 def __cleanup_generated(product):
@@ -100,6 +127,8 @@ def post_build_process():
         label = product['label']
         print(f'[post-build:{label}] Preparing build info...')
         __prepare_build_info(product)
+        print(f'[post-build:{label}] Patching generated code...')
+        __patch_configuration(product)
         print(f'[post-build:{label}] Cleaning up generated files...')
         __cleanup_generated(product)
 

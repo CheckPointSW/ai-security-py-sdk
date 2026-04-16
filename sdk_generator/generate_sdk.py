@@ -46,7 +46,9 @@ def generate(product: dict):
     project_dir = Path(this_dir_path, '../')
     specs_path = os.path.join(project_dir, 'resources', 'specs', product['spec_dir'], 'swagger.json')
     generator_path = os.path.join(this_dir_path, 'open_api_tool', 'openapi-generator-cli-7.12.0.jar')
-    jre_path = os.getenv('JRE_PATH', 'java')
+    jre_path = shutil.which('java')
+    if not jre_path:
+        raise RuntimeError('Java runtime not found. Install Java or ensure java is on PATH.')
     generated_path = os.path.join(project_dir, product['generated_rel'])
 
     library = product.get('library', '')
@@ -61,18 +63,18 @@ def generate(product: dict):
                 onerror=lambda err: print(f'{log_prefix} Error cleaning generated dir: {err}'),
             )
 
-        cmd_line = (
-            f'"{jre_path}" -jar {generator_path} generate'
-            f' --generator-name python'
-            f' --input-spec {specs_path}'
-            f' --output {project_dir}'
-            f' --template-dir {template_dir}'
-            f' --global-property modelDocs=false,modelTests=false'
-            f' --additional-properties=generateSourceCodeOnly=true,packageName={product["package_name"]}{library_prop}'
-            f' --skip-validate-spec'
-        )
-        print(f'{log_prefix} Invoking generator:\n{cmd_line}')
-        subprocess.run(cmd_line, shell=True, check=True, stdout=sys.stdout)
+        cmd = [
+            jre_path, '-jar', str(generator_path), 'generate',
+            '--generator-name', 'python',
+            '--input-spec', str(specs_path),
+            '--output', str(project_dir),
+            '--template-dir', str(template_dir),
+            '--global-property', 'modelDocs=false,modelTests=false',
+            '--additional-properties', f'generateSourceCodeOnly=true,packageName={product["package_name"]}{library_prop}',
+            '--skip-validate-spec',
+        ]
+        print(f'{log_prefix} Invoking generator:\n{" ".join(cmd)}')
+        subprocess.run(cmd, check=True, stdout=sys.stdout)
 
     except subprocess.CalledProcessError as e:
         print(f'{log_prefix} Generator error:\n\t{e}')
