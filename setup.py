@@ -15,6 +15,7 @@ prod_dependencies = [
     'python-dateutil~=2.8',
     'python-dotenv~=1.0',
     'requests~=2.32',
+    'pydantic>=2.0',
     'typing-extensions>=4.12',
     'pyjwt~=2.8',
     'unitsnet-py>=0.1.82',
