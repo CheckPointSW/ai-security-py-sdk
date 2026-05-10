@@ -27,12 +27,18 @@ jobs:
           wget -q https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.12.0/openapi-generator-cli-7.12.0.jar \
             -O sdk_generator/open_api_tool/openapi-generator-cli-7.12.0.jar
           echo "33e7dfa7a1f04d58405ee12ae19e2c6fc2a91497cf2e56fa68f1875a95cbf220  sdk_generator/open_api_tool/openapi-generator-cli-7.12.0.jar" | sha256sum -c
+      - name: Set version from tag
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+          sed -i "s/version='[^']*'/version='$VERSION'/" setup.py
+
       - name: Build SDK
         run: |
           python -m pip install -r ./requirements.txt
           export BRANCH_NAME=${GITHUB_REF#refs/heads/}
           export BUILD_JOB_ID=$GITHUB_RUN_ID
-          export BUILD_VERSION=$(python setup.py --version)
+          export BUILD_VERSION=$RELEASE_VERSION
           python ./sdk_generator/generate_sdk.py
         env:
           SWAGGERHUB_API_KEY: ${{ secrets.SWAGGERHUB_API_KEY }}
