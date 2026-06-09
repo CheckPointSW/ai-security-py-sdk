@@ -78,7 +78,7 @@ class TestIntegration(unittest.TestCase):
                 description='Integration test',
                 order=0,
                 policy=ChatsPolicy(
-                    event_type=DLPEventType.FILE_UPLOAD,
+                    event_types=[DLPEventType.FILE_UPLOAD],
                     action='prevent',
                     logging=LoggingStatus.ENABLED,
                     services_and_application=ServicesAndApplication(mode=SelectionMode.ALL),
@@ -292,7 +292,7 @@ class TestIntegration(unittest.TestCase):
                 description='Toggle test',
                 order=0,
                 policy=ChatsPolicy(
-                    event_type=DLPEventType.PROMPT,
+                    event_types=[DLPEventType.PROMPT],
                     action='block',
                     logging=LoggingStatus.ENABLED,
                     services_and_application=ServicesAndApplication(mode=SelectionMode.ALL),
